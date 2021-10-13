@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * @file
+ * Contains dbo_dashboard.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function dbo_dashboard_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the dbo_dashboard module.
+    case 'help.page.dbo_dashboard':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Management Information Dashboard.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function dbo_dashboard_theme() {
+  return [
+    'dbo_dashboard' => [
+      'render element' => 'children',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function dbo_dashboard_page_attachments_alter(&$page) {
+  $current_path = \Drupal::service('path.current')->getPath();
+  $module_handler = \Drupal::service('module_handler');
+
+  switch ($current_path) {
+    case '/dashboard':
+      /*
+        The library doesn't recognise adding link tags as script, so we add these
+        prefetch/preload scripts to the header via this hook.
+      */
+      $module_path = $module_handler->getModule('dbo_dashboard')->getPath();
+
+      $files = \Drupal::service('file_system')->scanDirectory(
+        $module_path . '/source/dist/js',
+        '/\.js$/',
+        ['recurse' => FALSE, 'key' => 'filename']
+      );
+      if (!empty($files)) {
+        $i = 1;
+        foreach ($files as $file) {
+          $f = [
+            '#tag' => 'link',
+            '#attributes' => [
+              'href' => '/' . $file->uri,
+              'rel' => 'preload',
+              'as' => 'script',
+            ],
+          ];
+          $page['#attached']['html_head'][] = [$f, 'vue' . $i];
+          $i++;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+}
+
+/**
+ * Implements hook_library_info_build().
+ */
+function dbo_dashboard_library_info_build() {
+  /*
+    Standard JS and CSS added here.
+  */
+  $libraries = [];
+
+  $module_handler = \Drupal::service('module_handler');
+  $module_path = $module_handler->getModule('dbo_dashboard')->getPath();
+
+  $files = \Drupal::service('file_system')->scanDirectory(
+    $module_path . '/source/dist/js',
+    '/\.js$/',
+    [
+      'recurse' => FALSE,
+      'key' => 'filename',
+    ]
+  );
+  if (!empty($files)) {
+    $i = 1;
+    $f = [];
+    foreach ($files as $file) {
+      $f['/' . $file->uri] = ['minified' => TRUE];
+      $i++;
+    }
+  }
+
+  $libraries['vue_js'] = [
+    'js' => $f,
+  ];
+
+  $files = \Drupal::service('file_system')->scanDirectory(
+    $module_path . '/source/dist/css',
+    '/\.css$/',
+    [
+      'recurse' => FALSE,
+      'key' => 'filename',
+    ]
+  );
+  if (!empty($files)) {
+    $i = 1;
+    $f = [];
+    foreach ($files as $file) {
+      $f['/' . $file->uri] = ['minified' => TRUE];
+      $i++;
+    }
+  }
+
+  $libraries['vue_css'] = [
+    'css' => [
+      'base' => $f,
+    ],
+  ];
+
+  return $libraries;
+}

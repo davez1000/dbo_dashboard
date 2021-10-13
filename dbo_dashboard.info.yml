@@ -1,0 +1,7 @@
+name: 'Dashboard'
+type: module
+description: 'Management Information Dashboard.'
+core_version_requirement: ^8 || ^9
+package: 'Custom'
+dependencies:
+  - dbo_stats

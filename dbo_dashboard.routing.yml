@@ -1,0 +1,10 @@
+
+dbo_dashboard.mi_dashboard_controller_build:
+  path: '/dashboard'
+  defaults:
+    _controller: '\Drupal\dbo_dashboard\Controller\DboDashboardController::build'
+    _title: ''
+  requirements:
+    _permission: 'mi dashboard'
+  options:
+    no_cache: 'TRUE'

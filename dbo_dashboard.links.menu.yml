@@ -1,0 +1,6 @@
+dbo_dashboard.dashboard:
+  title: 'MI Dashboard'
+  route_name: dbo_dashboard.mi_dashboard_controller_build
+  description: 'Show the management information dashboard'
+  parent: system.admin
+  weight: 1000
